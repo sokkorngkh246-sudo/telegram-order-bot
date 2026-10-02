@@ -101,7 +101,7 @@ Distributed under the MIT License. See LICENSE for more information.
 
 🤝 Contact & Hiring
 
-Developed with ❤️ by [Your Name/Your GitHub Profile]
+Developed with ❤️ by [/Your GitHub Profile]
 
 Telegram: [@YourTelegramHandle]
 
