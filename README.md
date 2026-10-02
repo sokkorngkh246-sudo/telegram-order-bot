@@ -35,7 +35,7 @@ python --version
 
 2. Clone the Repository
 
-git clone https://github.com/your-username/telegram-order-bot.git
+git clone https://github.com/sokkorngkh246-sudo/telegram-order-bot.git
 cd telegram-order-bot
 
 
@@ -101,11 +101,18 @@ Distributed under the MIT License. See LICENSE for more information.
 
 🤝 Contact & Hiring
 
-Developed with ❤️ by [Your Name/Your GitHub Profile]
+Developed with ❤️ by [Me.SOKKORNG]
 
-Telegram: [@YourTelegramHandle]
+Telegram: [t.me/sk246_smarter](https://t.me/sk246_smarter)
 
-Email: your.email@example.com
+Email: [sokkorng.kh.246@gmail.com](mailto:sokkorng.kh.246@gmail.com)
+
+GitHub: [github.com/sokkorngkh246-sudo](https://github.com/sokkorngkh246-sudo)
 
 LinkedIn: linkedin.com/in/yourprofile
+
+---
+
+💼 **Work Status:** Open for Freelance Projects & Commercial Bot Development  
+📍 **Location:** Phnom Penh, Cambodia
 
