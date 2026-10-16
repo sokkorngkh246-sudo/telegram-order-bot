@@ -78,7 +78,7 @@ PRODUCTS = {
     "prod_10": {"name": "នំខេកឆូកូឡាត (Chocolate Cake)", "price": 3.25, "has_sugar": False},
 }
 
-# Logging (កែប្រែ Syntax ត្រឹមត្រូវ)
+# Logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -90,17 +90,26 @@ logging.basicConfig(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """ចាប់ផ្តើម Bot និងបង្ហាញបញ្ជីទំនិញ"""
+    # លុបទិន្នន័យចាស់ដើម្បីចាប់ផ្តើម Order ថ្មីជានិច្ច
+    context.user_data.clear()
     context.user_data['order'] = {}
     
     keyboard = [
-        [InlineKeyboardButton(f"{p['name']} — ${p['price']:.2f}", callback_data=code)]
+        [InlineKeyboardButton(f"☕️ {p['name']} — ${p['price']:.2f}", callback_data=code)]
         for code, p in PRODUCTS.items()
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
+    welcome_text = (
+        "👋 *ជម្រាបសួរ! ស្វាគមន៍មកកាន់ហាងរបស់យើងខ្ញុំ* ☕️🥤\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "សូមជ្រើសរើសមុខទំនិញដែលលោកអ្នកចង់កុម្ម៉ង់ខាងក្រោម៖"
+    )
+    
     await update.message.reply_text(
-        "សូមស្វាគមន៍មកកាន់ហាងរបស់យើង! ☕️🥤\n\nសូមជ្រើសរើសមុខទំនិញដែលអ្នកចង់កុម្ម៉ង់៖",
-        reply_markup=reply_markup
+        welcome_text,
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
     )
     return CHOOSING_PRODUCT
 
@@ -114,7 +123,7 @@ async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     selected_prod = PRODUCTS.get(product_code)
     
     if not selected_prod:
-        await query.edit_message_text("មានបញ្ហាក្នុងការជ្រើសរើស។ សូមវាយ /start ឡើងវិញ។")
+        await query.edit_message_text("❌ មានបញ្ហាក្នុងការជ្រើសរើស។ សូមវាយ /start ដើម្បីចាប់ផ្តើមឡើងវិញ។")
         return ConversationHandler.END
 
     context.user_data['order']['product_code'] = product_code
@@ -122,7 +131,6 @@ async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     context.user_data['order']['unit_price'] = selected_prod['price']
     context.user_data['order']['has_sugar'] = selected_prod['has_sugar']
     
-    # ប៊ូតុងជ្រើសរើសចំនួន 1 ដល់ 6
     qty_keyboard = [
         [
             InlineKeyboardButton("1", callback_data="qty_1"),
@@ -137,8 +145,10 @@ async def product_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     ]
     
     msg_text = (
-        f"អ្នកបានជ្រើសរើស៖ *{selected_prod['name']}* (${selected_prod['price']:.2f})\n\n"
-        "សូមជ្រើសរើស *ចំនួន (Quantity)* ៖"
+        f"🛍 *មុខទំនិញ:* {selected_prod['name']}\n"
+        f"💵 *តម្លៃ/កែវ:* ${selected_prod['price']:.2f}\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "👉 សូមជ្រើសរើស *ចំនួន (Quantity)* ៖"
     )
     
     await query.edit_message_text(
@@ -160,7 +170,6 @@ async def qty_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     context.user_data['order']['qty'] = qty
     context.user_data['order']['total_price'] = qty * unit_price
 
-    # ប្រសិនបើជាទំនិញប្រភេទភេសជ្ជៈ សួររកកម្រិតស្ករ
     if context.user_data['order']['has_sugar']:
         sugar_keyboard = [
             [
@@ -177,8 +186,10 @@ async def qty_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         ]
         
         msg_text = (
-            f"ចំនួន៖ *{qty}* (សរុប៖ *${context.user_data['order']['total_price']:.2f}*)\n\n"
-            "សូមជ្រើសរើស *កម្រិតស្ករ (Sugar Level)* ៖"
+            f"🔢 *ចំនួន:* {qty} កែវ/ចាន\n"
+            f"💰 *តម្លៃសរុប:* ${context.user_data['order']['total_price']:.2f}\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "👉 សូមជ្រើសរើស *កម្រិតស្ករ (Sugar Level)* ៖"
         )
         await query.edit_message_text(
             msg_text,
@@ -189,8 +200,10 @@ async def qty_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     else:
         context.user_data['order']['sugar'] = "N/A"
         msg_text = (
-            f"ចំនួន៖ *{qty}* (សរុប៖ *${context.user_data['order']['total_price']:.2f}*)\n\n"
-            "សូមបញ្ចូល *ឈ្មោះ* របស់អ្នកសម្រាប់ទាក់ទង៖"
+            f"🔢 *ចំនួន:* {qty} កែវ/ចាន\n"
+            f"💰 *តម្លៃសរុប:* ${context.user_data['order']['total_price']:.2f}\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "👉 សូមបញ្ចូល *ឈ្មោះ* របស់អ្នកសម្រាប់ទាក់ទង៖"
         )
         await query.edit_message_text(
             msg_text,
@@ -208,8 +221,9 @@ async def sugar_selected(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     context.user_data['order']['sugar'] = sugar_level
     
     await query.edit_message_text(
-        f"កម្រិតស្ករ៖ *{sugar_level}*\n\n"
-        "សូមបញ្ចូល *ឈ្មោះ* របស់អ្នកសម្រាប់ទាក់ទង៖",
+        f"🍬 *កម្រិតស្ករ:* {sugar_level}\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "👉 សូមបញ្ចូល *ឈ្មោះ* របស់អ្នកសម្រាប់ទាក់ទង៖",
         parse_mode="Markdown"
     )
     return GET_NAME
@@ -221,7 +235,9 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['order']['name'] = user_name
     
     await update.message.reply_text(
-        f"អរគុណ {user_name}!\n\nសូមបញ្ចូល *លេខទូរស័ព្ទ* របស់អ្នក៖",
+        f"👤 *ឈ្មោះ:* {user_name}\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "👉 សូមបញ្ចូល *លេខទូរស័ព្ទ* របស់អ្នក៖",
         parse_mode="Markdown"
     )
     return GET_PHONE
@@ -238,7 +254,9 @@ async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_markup = ReplyKeyboardMarkup(location_keyboard, resize_keyboard=True, one_time_keyboard=True)
     
     await update.message.reply_text(
-        "សូមចុចប៊ូតុងខាងក្រោមដើម្បី *ផ្ញើទីតាំងបច្ចុប្បន្ន (GPS)* ឬវាយបញ្ចូល *អាសយដ្ឋាន* ជាអក្សរ៖",
+        "📍 *អាសយដ្ឋានដឹកជញ្ជូន*\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "👉 សូមចុចប៊ូតុងខាងក្រោមដើម្បី *ផ្ញើទីតាំងបច្ចុប្បន្ន (GPS)* ឬវាយ *អាសយដ្ឋាន* ជាអក្សរ៖",
         parse_mode="Markdown",
         reply_markup=reply_markup
     )
@@ -259,7 +277,8 @@ async def get_location_or_address(update: Update, context: ContextTypes.DEFAULT_
     order = context.user_data['order']
     
     pay_msg = (
-        f"💵 *តម្លៃសរុបត្រូវទូទាត់៖ ${order['total_price']:.2f}*\n\n"
+        f"💵 *តម្លៃសរុបត្រូវទូទាត់៖ ${order['total_price']:.2f}*\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
         "💳 *ព័ត៌មានគណនីទូទាត់ (ABA / KHQR)៖*\n"
         "• ឈ្មោះគណនី៖ *COFFEE SHOP DEMO*\n"
         "• លេខគណនី ABA៖ `000 123 456`\n\n"
@@ -286,7 +305,8 @@ async def payment_slip_received(update: Update, context: ContextTypes.DEFAULT_TY
 
     # ១. សារបញ្ជាក់ជូនអតិថិជន
     buyer_msg = (
-        "✅ *ទទួលបានការកុម្ម៉ង់ និង Slip ទូទាត់រួចរាល់!*\n\n"
+        "✅ *ទទួលបានការកុម្ម៉ង់ និង Slip ទូទាត់រួចរាល់!*\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
         f"☕️ *ទំនិញ:* {order['product']}\n"
         f"🔢 *ចំនួន:* {order['qty']}{sugar_info}\n"
         f"💵 *តម្លៃសរុប:* ${order['total_price']:.2f}\n"
@@ -326,7 +346,7 @@ async def payment_slip_received(update: Update, context: ContextTypes.DEFAULT_TY
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """បោះបង់ការកុម្ម៉ង់"""
     await update.message.reply_text(
-        "ការកុម្ម៉ង់ត្រូវបានបោះបង់។ វាយ /start ដើម្បីចាប់ផ្តើមឡើងវិញ។",
+        "🚫 ការកុម្ម៉ង់ត្រូវបានបោះបង់។ វាយ /start ដើម្បីចាប់ផ្តើមឡើងវិញ។",
         reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
